@@ -1,9 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Flex, HStack, Menu, MenuButton, MenuList, MenuItem, Button } from '@chakra-ui/react';
+import { Box, Flex, HStack, Menu, MenuButton, MenuList, MenuItem, Button, IconButton } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
+import { useAuth } from '../../context/AuthContext';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../services/firebase/firebaseConfig';
+import { AddIcon, EditIcon } from '@chakra-ui/icons';
 
 const Header = () => {
+  const { currentUser } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
+
   return (
     <Box bg="teal.500" px={4}>
       <Flex h={16} alignItems="center" justifyContent="space-between">
@@ -13,7 +23,7 @@ const Header = () => {
           </Box>
           <HStack as="nav" spacing={4} display={{ base: 'none', md: 'flex' }}>
             <Menu>
-              <MenuButton as={Button} rightIcon={<ChevronDownIcon />} color="white">
+              <MenuButton as={Button} rightIcon={<ChevronDownIcon />} color="white" backgroundColor={"black"}>
                 Productos
               </MenuButton>
               <MenuList>
@@ -61,6 +71,17 @@ const Header = () => {
                 </Menu>
               </MenuList>
             </Menu>
+            {currentUser && (
+              <Menu>
+                <MenuButton as={Button} rightIcon={<ChevronDownIcon />} color="white" backgroundColor={"black"}>
+                  Admin
+                </MenuButton>
+                <MenuList>
+                  <MenuItem as={Link} to="/admin/add-product"><AddIcon mr={2} />Agregar Producto</MenuItem>
+                  <MenuItem as={Link} to="/admin/edit-product"><EditIcon mr={2} />Editar Producto</MenuItem>
+                </MenuList>
+              </Menu>
+            )}
             <Link to="/contact">Contacto</Link>
             <Link to="/about">Quiénes Somos</Link>
             <Link to="/how-to-buy">Cómo Comprar</Link>
@@ -69,7 +90,16 @@ const Header = () => {
         </HStack>
         <HStack spacing={8} alignItems="center">
           <Link to="/cart">Carrito</Link>
-          <Link to="/login">Iniciar Sesión</Link>
+          {currentUser ? (
+            <>
+              <Button colorScheme="teal" onClick={handleLogout}>Cerrar Sesión</Button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">Iniciar Sesión</Link>
+              <Link to="/register">Registrarse</Link>
+            </>
+          )}
         </HStack>
       </Flex>
     </Box>

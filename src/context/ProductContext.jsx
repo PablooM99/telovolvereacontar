@@ -1,33 +1,46 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { db } from '../services/firebase/firebaseConfig';
+import { collection, addDoc, updateDoc, deleteDoc, onSnapshot, doc } from 'firebase/firestore';
 
 const ProductContext = createContext();
 
-export const useProducts = () => {
-  return useContext(ProductContext);
-};
+export const useProduct = () => useContext(ProductContext);
 
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const productCollection = collection(db, 'products');
-      const productSnapshot = await getDocs(productCollection);
-      const productList = productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setProducts(productList);
-    };
-    fetchProducts();
+    const unsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
+      const productsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setProducts(productsList);
+    });
+
+    return unsubscribe;
   }, []);
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const addProduct = async (product) => {
+    await addDoc(collection(db, 'products'), product);
+  };
+
+  const updateProduct = async (id, updatedProduct) => {
+    const productDoc = doc(db, 'products', id);
+    await updateDoc(productDoc, updatedProduct);
+  };
+
+  const deleteProduct = async (id) => {
+    const productDoc = doc(db, 'products', id);
+    await deleteDoc(productDoc);
+  };
+
+  const value = {
+    products,
+    addProduct,
+    updateProduct,
+    deleteProduct
+  };
 
   return (
-    <ProductContext.Provider value={{ products: filteredProducts, setSearchQuery }}>
+    <ProductContext.Provider value={value}>
       {children}
     </ProductContext.Provider>
   );

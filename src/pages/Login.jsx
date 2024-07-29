@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Box, Button, FormControl, FormLabel, Input, Heading, Container } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../services/firebase/firebaseConfig';
+import {
+  Box, Button, FormControl, FormLabel, Input, Stack,
+} from '@chakra-ui/react';
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -14,28 +16,40 @@ const Login = () => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      Swal.fire('Login Successful', 'You are now logged in', 'success');
-      navigate('/admin');
+      Swal.fire({
+        title: 'Inicio de sesión exitoso',
+        text: 'Ha iniciado sesión correctamente',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        navigate('/');
+      });
     } catch (error) {
-      Swal.fire('Error', error.message, 'error');
+      Swal.fire({
+        title: 'Error',
+        text: 'Correo electrónico o contraseña incorrectos',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
 
   return (
-    <Container maxW="md" p={4}>
-      <Heading mb={4}>Iniciar Sesión</Heading>
+    <Box>
       <form onSubmit={handleLogin}>
-        <FormControl id="email" isRequired>
-          <FormLabel>Email</FormLabel>
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </FormControl>
-        <FormControl id="password" isRequired mt={4}>
-          <FormLabel>Contraseña</FormLabel>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </FormControl>
-        <Button type="submit" colorScheme="teal" mt={4}>Iniciar Sesión</Button>
+        <Stack spacing={4}>
+          <FormControl>
+            <FormLabel>Email</FormLabel>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </FormControl>
+          <FormControl>
+            <FormLabel>Contraseña</FormLabel>
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </FormControl>
+          <Button type="submit" colorScheme="teal">Iniciar Sesión</Button>
+        </Stack>
       </form>
-    </Container>
+    </Box>
   );
 };
 

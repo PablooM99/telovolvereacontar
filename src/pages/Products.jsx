@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../services/firebase/firebaseConfig';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Box, Grid } from '@chakra-ui/react';
+import { Box, Grid, IconButton } from '@chakra-ui/react';
+import { AddIcon } from '@chakra-ui/icons';
 import ProductCard from '../components/ProductCard/ProductCard';
+import { useAuth } from '../context/AuthContext';
 
 const Products = () => {
   const { category } = useParams();
   const [products, setProducts] = useState([]);
+  const { isAdmin } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -25,8 +29,22 @@ const Products = () => {
     fetchProducts();
   }, [category]);
 
+  const handleAddProduct = () => {
+    navigate('/admin/add-product');
+  };
+
   return (
     <Box p={4}>
+      {isAdmin && (
+        <Box display="flex" justifyContent="flex-end" mb={4}>
+          <IconButton
+            icon={<AddIcon />}
+            colorScheme="teal"
+            onClick={handleAddProduct}
+            aria-label="Agregar producto"
+          />
+        </Box>
+      )}
       <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={6}>
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
